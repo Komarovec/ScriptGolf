@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+    <head>
+        <meta charset="utf-8">
+        <title>CanvasGame</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Bootstrap CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            canvas {
+                border: 1px solid #d3d3d3;
+                background-color: #f1f1f1;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="jumbotron">
+            <h1 class="text-center">Canvas Game</h1>
+        </header>
+        <main class="container">
+            <div class="row">
+                <div class="col-sm-9">
+                    <h2>Minigolf</h2>            
+                    <canvas id="canvas" width="800" height="600"></canvas>            
+                </div>
+                <div class="col-sm-3">
+                    <h2>StrokeList</h2>
+                    <ul id="strokelist">
+                    </ul>
+                </div>
+            </div>
+        </main>
+        <script src="script/hole.js"></script>
+        <script src="script/wall.js"></script>
+        <script src="script/golfball.js"></script>
+        <script src="script/main.js"></script>
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <!-- Bootstrap JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    </body>
+</html>
