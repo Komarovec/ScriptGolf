@@ -1,13 +1,14 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var objects = [];
-var level1 = [new Golfball(50, 50), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
+var level1 = [new Golfball(50, 50), new Water(400,400,400,200), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
 var level2 = [new Golfball(125, 550), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
-var level3 = [new Golfball(50, 50), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Wall(390,50,25,800), new Hole(750,50)];
+var level3 = [new Golfball(50, 50), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,500), new Hole(750,50)];
 var level4 = [new Golfball(400, 350), new Hole(400,250), new Wall(50, 285, 700, 25)];
-var level5 = [];
-var level6 = [];
+var level5 = [new Golfball(750, 550), new Hole(50,50), new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
+var level6 = [new Golfball(400, 350), new Hole(50,50), new Wall(25,290,700,25), new Wall(700,90,25,200)];
 var strokeList = [];
+var end = false;
 var ball = null;
 var strokes = 0;
 var cx, cy;
@@ -57,18 +58,34 @@ function unloadLevel() {
         case 4: 
             loadLevel(level4);
             break;
-        /*case 5: 
+        case 5: 
             loadLevel(level5);
             break;
         case 6: 
             loadLevel(level6);
-            break;*/
+            break;
         default:
-            setBackground("black", "green");
-            ctx.font = "40px Arial";
-            ctx.fillText("End! Thanks for playing!",400,300);
+            document.getElementById("win").innerHTML += "<b>End! Thanks for playing!</b>";
+            setBackground("black", "white");
+            end = true;
             break;
     }
+}
+
+function artiWin() { //Funkce pro testování /artificial win/
+    currentLevel = "TEST";
+    unloadLevel();
+}
+
+function restart() { //Zatím nefunkční
+    end = false;
+    document.getElementById("win").innerHTML = "";
+    document.getElementById("strokelist").innerHTML = "";
+    objects = [];
+    currentLevel = 1;
+    strokes = 0;
+    strokeList = [];
+    loadLevel(level1);
 }
 
 function loadLevel(level) {
@@ -84,6 +101,8 @@ function paint() {
     setBackground("black", "green");
     objects.forEach(function(obj) {
         if(obj.type == "wall") obj.collision(ball.x, ball.y); //Kontrola kolizí
+        if(obj.type == "sand") obj.collision(ball.x, ball.y);
+        if(obj.type == "water") obj.collision(ball.x, ball.y);
         if(obj.type == "hole") {
             if((obj.dist(ball.x, ball.y) <= obj.radius*2) && (ball.xSpeed < 2 && ball.ySpeed < 2 && ball.xSpeed > -2 && ball.ySpeed > -2)) {
                 unloadLevel();
@@ -92,7 +111,7 @@ function paint() {
         }
         obj.paint(ctx);
     });
-    if(ball == null) return;
+    if(ball == null || end == true) return;
     ball.paint(ctx);
     if(ball.moving() || ball.dist(cx, cy) > 200) return; //Vykresli šipku
     ctx.beginPath();
@@ -101,7 +120,7 @@ function paint() {
 }
 
 function think() {
-    if(ball == null) return;
+    if(ball == null || end == true) return;
     ball.move(canvas);
     paint();
 }
@@ -112,6 +131,7 @@ document.addEventListener("mousemove", function(evt) {
 }) 
 
 document.addEventListener("click", function(evt) {
+    //if(end) restart();
     if(ball == null) return;
     if(ball.moving()  || ball.dist(cx, cy) > 200) return;
     var xF = -((ball.x - cx)/10);
