@@ -10,11 +10,12 @@ function Water(x, y, w, h) {
     this.lineDash = [];
   
     this.collision = function() {
+        if(!ball.placed) return;
         if(ball.x > this.x && ball.x < this.x + this.width && ball.y > this.y && ball.y < this.y + this.height) {
-            ball.x = ball.startX;
-            ball.y = ball.startY;
             ball.xSpeed = 0;
             ball.ySpeed = 0;
+            ball.placed = false;
+            ball.splash.play();
         }
     }
 

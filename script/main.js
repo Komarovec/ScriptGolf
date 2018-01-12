@@ -1,26 +1,43 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
-var objects = [];
+var objects = []; 
+//StartRect musí byt v poli levelu vždy PRVNÍ!, čím víc vlevo je prvek v poli tak 
 var level1 = [new StartRect(50,50,150,100), new Water(400,400,400,200), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
-var level2 = [new StartRect(125,550,150,100), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
-var level3 = [new StartRect(50,50,150,100), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,400), new Hole(750,50)];
-var level4 = [new StartRect(400,350,150,100), new Hole(400,250), new Wall(50, 285, 700, 25)];
-var level5 = [new StartRect(750,550,150,100), new Hole(50,50), new Sand(0,100,200,200), new Sand(600,300,200,200),new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
-var level6 = [new StartRect(400,350,150,100), new Hole(50,50), new Sand(0,500,800,100), new Water(200,200,500,90), new Wall(25,290,700,25), new Wall(700,90,25,200)];
+var level2 = [new StartRect(50,450,150,100), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
+var level3 = [new StartRect(50,50,100,100), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,400), new Hole(750,50)];
+var level4 = [new StartRect(325,350,150,100), new Hole(400,250), new Wall(50, 285, 700, 25)];
+var level5 = [new StartRect(700,520,75,75), new Hole(50,50), new Sand(0,100,200,200), new Sand(600,300,200,200),new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
+var level6 = [new StartRect(350,325,100,75), new Hole(50,50), new Sand(0,500,800,100), new Water(200,200,500,90), new Wall(25,290,700,25), new Wall(700,90,25,200)];
 var strokeList = [];
 var end = false;
 var ball = null;
 var strokes = 0;
 var cx, cy;
 var currentLevel = 1;
+var winSound = new sound("content/sounds/winner.mp3");
 setInterval(think, 15);
 
 loadLevel(level1);
 
-function setBackground(borderColor, backgroundColor) {
+function setBackground(borderColor, backgroundColor) { //Nastaví pozadí hracího pole
     canvas.style.border = "3px solid " + borderColor;
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function sound(src) { //Objekt zvuk pro různé efekty
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }
 }
 
 function getMousePos(canvas, evt) {
@@ -67,6 +84,7 @@ function unloadLevel() {
         default:
             document.getElementById("win").innerHTML += "<b>End! Thanks for playing!</b>";
             setBackground("black", "white");
+            winSound.play();
             end = true;
             break;
     }
@@ -106,13 +124,17 @@ function paint() {
         if(obj.type == "water") obj.collision(ball.x, ball.y);
         if(obj.type == "hole" && ball.placed) {
             if((obj.dist(ball.x, ball.y) <= obj.radius*2) && (ball.xSpeed < 2 && ball.ySpeed < 2 && ball.xSpeed > -2 && ball.ySpeed > -2)) {
+                ball.holeStroke.play();
                 unloadLevel();
                 return;
             }
         }
         obj.paint(ctx);
     });
-    ball.paint(ctx);
+
+    if(objects[0].inStart() || ball.placed) //Vykresli míč pouzš pokud je ve startu nebo už byl položen.
+        ball.paint(ctx);
+
     if(ball.placed) {
         if(ball == null || end == true) return;
         ball.paint(ctx);
@@ -138,11 +160,8 @@ document.addEventListener("mousemove", function(evt) {
 }) 
 
 document.addEventListener("click", function(evt) {
-    if(ball.placed == false) {
-        if(objects[0].inStart()) {
-            ball.placed = true;
-            console.log("PLACED!");
-        }
+    if(ball.placed == false && objects[0].inStart()) {
+        ball.placed = true;
     }
     else {
         if(ball == null) return;
