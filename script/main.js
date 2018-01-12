@@ -1,12 +1,12 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var objects = [];
-var level1 = [new Golfball(50, 50), new Water(400,400,400,200), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
-var level2 = [new Golfball(125, 550), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
-var level3 = [new Golfball(50, 50), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,500), new Hole(750,50)];
-var level4 = [new Golfball(400, 350), new Hole(400,250), new Wall(50, 285, 700, 25)];
-var level5 = [new Golfball(750, 550), new Hole(50,50), new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
-var level6 = [new Golfball(400, 350), new Hole(50,50), new Wall(25,290,700,25), new Wall(700,90,25,200)];
+var level1 = [new StartRect(50,50,150,100), new Water(400,400,400,200), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
+var level2 = [new StartRect(125,550,150,100), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
+var level3 = [new StartRect(50,50,150,100), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,400), new Hole(750,50)];
+var level4 = [new StartRect(400,350,150,100), new Hole(400,250), new Wall(50, 285, 700, 25)];
+var level5 = [new StartRect(750,550,150,100), new Hole(50,50), new Sand(0,100,200,200), new Sand(600,300,200,200),new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
+var level6 = [new StartRect(400,350,150,100), new Hole(50,50), new Sand(0,500,800,100), new Water(200,200,500,90), new Wall(25,290,700,25), new Wall(700,90,25,200)];
 var strokeList = [];
 var end = false;
 var ball = null;
@@ -88,13 +88,14 @@ function restart() { //Zatím nefunkční
     loadLevel(level1);
 }
 
+function placeBall(ball) {
+    ball.x = cx;
+    ball.y = cy;
+}
+
 function loadLevel(level) {
     objects = level;
-    objects.forEach(function(obj) {
-        if(obj.type == "ball") {
-            ball = obj;
-        }
-    });
+    ball = new Golfball(cx,cy);
 }
 
 function paint() {
@@ -103,7 +104,7 @@ function paint() {
         if(obj.type == "wall") obj.collision(ball.x, ball.y); //Kontrola kolizí
         if(obj.type == "sand") obj.collision(ball.x, ball.y);
         if(obj.type == "water") obj.collision(ball.x, ball.y);
-        if(obj.type == "hole") {
+        if(obj.type == "hole" && ball.placed) {
             if((obj.dist(ball.x, ball.y) <= obj.radius*2) && (ball.xSpeed < 2 && ball.ySpeed < 2 && ball.xSpeed > -2 && ball.ySpeed > -2)) {
                 unloadLevel();
                 return;
@@ -111,12 +112,18 @@ function paint() {
         }
         obj.paint(ctx);
     });
-    if(ball == null || end == true) return;
     ball.paint(ctx);
-    if(ball.moving() || ball.dist(cx, cy) > 200) return; //Vykresli šipku
-    ctx.beginPath();
-    canvas_arrow(ctx, ball.x, ball.y, cx, cy);
-    ctx.stroke();
+    if(ball.placed) {
+        if(ball == null || end == true) return;
+        ball.paint(ctx);
+        if(ball.moving() || ball.dist(cx, cy) > 200) return; //Vykresli šipku
+        ctx.beginPath();
+        canvas_arrow(ctx, ball.x, ball.y, cx, cy);
+        ctx.stroke();
+    }
+    else {
+        placeBall(ball);
+    }
 }
 
 function think() {
@@ -131,10 +138,17 @@ document.addEventListener("mousemove", function(evt) {
 }) 
 
 document.addEventListener("click", function(evt) {
-    //if(end) restart();
-    if(ball == null) return;
-    if(ball.moving()  || ball.dist(cx, cy) > 200) return;
-    var xF = -((ball.x - cx)/10);
-    var yF = -((ball.y - cy)/10);
-    ball.stroke(xF,yF);
+    if(ball.placed == false) {
+        if(objects[0].inStart()) {
+            ball.placed = true;
+            console.log("PLACED!");
+        }
+    }
+    else {
+        if(ball == null) return;
+        if(ball.moving()  || ball.dist(cx, cy) > 200) return;
+        var xF = -((ball.x - cx)/10);
+        var yF = -((ball.y - cy)/10);
+        ball.stroke(xF,yF);
+    }
 })

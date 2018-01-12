@@ -3,6 +3,7 @@ function Golfball(x, y) {
     this.y = y;
     this.startX = x;
     this.startY = y;
+    this.placed = false;
     this.type = "ball";         // typ objektu
     this.radius = 10;
     this.fillStyle = "white";      // barva výplně

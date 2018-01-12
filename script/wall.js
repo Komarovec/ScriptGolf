@@ -5,9 +5,6 @@ function Wall(x, y, w, h) {
     this.width = w;
     this.type = "wall";         // typ objektu
     this.fillStyle = "white";      // barva výplně
-    this.strokeStyle = "black";   // barva obrysu
-    this.lineWidth = 5;
-    this.lineDash = [];
     this.hitboxSize = 25;  
   
     this.collision = function(bx, by) {
