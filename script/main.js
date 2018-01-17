@@ -8,6 +8,7 @@ var level3 = [new StartRect(50,50,100,100), new Wall(200,0,25,225), new Wall(0,2
 var level4 = [new StartRect(325,350,150,100), new Hole(400,250), new Wall(50, 285, 700, 25)];
 var level5 = [new StartRect(700,520,75,75), new Hole(50,50), new Sand(0,100,200,200), new Sand(600,300,200,200),new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
 var level6 = [new StartRect(350,325,100,75), new Hole(50,50), new Sand(0,500,800,100), new Water(200,200,500,90), new Wall(25,290,700,25), new Wall(700,90,25,200)];
+var plyCount = 1;
 var strokeList = [];
 var end = false;
 var ball = null;
@@ -15,8 +16,8 @@ var strokes = 0;
 var cx, cy;
 var currentLevel = 1;
 var winSound = new sound("content/sounds/winner.mp3");
-setInterval(think, 15);
 
+setInterval(think, 15);
 loadLevel(level1);
 
 function setBackground(borderColor, backgroundColor) { //Nastaví pozadí hracího pole
@@ -65,6 +66,7 @@ function unloadLevel() {
     document.getElementById("strokelist").innerHTML += "<li>Level "+currentLevel+": <b>"+strokes+"</b> strokes</li>";
     strokes = 0;
     currentLevel++;
+    plyCount = players();
     switch(currentLevel){
         case 2: 
             loadLevel(level2);
@@ -95,6 +97,13 @@ function artiWin() { //Funkce pro testování /artificial win/
     unloadLevel();
 }
 
+function players() { //Vratí počet hráču ve formuláří
+    if(document.getElementById("pl1").checked) return 1;
+    else if(document.getElementById("pl2").checked) return 2;
+    else if(document.getElementById("pl3").checked) return 3;
+    else return 1;
+} 
+
 function restart() { //Zatím nefunkční
     end = false;
     document.getElementById("win").innerHTML = "";
@@ -106,12 +115,12 @@ function restart() { //Zatím nefunkční
     loadLevel(level1);
 }
 
-function placeBall(ball) {
+function placeBall(ball) { //Nastaví souřadnice míče na kurzor
     ball.x = cx;
     ball.y = cy;
 }
 
-function loadLevel(level) {
+function loadLevel(level) { //Načte do aktivních objektu, objekty levelu
     objects = level;
     ball = new Golfball(cx,cy);
 }
@@ -148,7 +157,7 @@ function paint() {
     }
 }
 
-function think() {
+function think() { //Zakladní opakovací funkce ..Moc nevyužita :)
     if(ball == null || end == true) return;
     ball.move(canvas);
     paint();

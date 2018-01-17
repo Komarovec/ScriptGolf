@@ -1,4 +1,4 @@
-function Wall45(x, y, s, type) {
+function Wall45(x, y, s, type) { //Nefunkční --> Hitboxy jsou špatně nastavené, musely by být do každého rohu jíné, jsem příliš líny :)
     this.x = x;
     this.y = y;
     this.size = s;

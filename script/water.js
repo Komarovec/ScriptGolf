@@ -1,4 +1,4 @@
-function Water(x, y, w, h) {
+function Water(x, y, w, h) { //Žbluňk
     this.x = x;
     this.y = y;
     this.height = h;
