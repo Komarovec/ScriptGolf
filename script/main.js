@@ -1,24 +1,34 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 var objects = []; 
-//StartRect musí byt v poli levelu vždy PRVNÍ!, čím víc vlevo je prvek v poli tak 
+//StartRect musí byt v poli levelu vždy PRVNÍ!
 var level1 = [new StartRect(50,50,150,100), new Water(400,400,400,200), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
 var level2 = [new StartRect(50,450,150,100), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
 var level3 = [new StartRect(50,50,100,100), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,400), new Hole(750,50)];
 var level4 = [new StartRect(325,350,150,100), new Hole(400,250), new Wall(50, 285, 700, 25)];
 var level5 = [new StartRect(700,520,75,75), new Hole(50,50), new Sand(0,100,200,200), new Sand(600,300,200,200),new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
 var level6 = [new StartRect(350,325,100,75), new Hole(50,50), new Sand(0,500,800,100), new Water(200,200,500,90), new Wall(25,290,700,25), new Wall(700,90,25,200)];
-var plyCount = 1;
-var strokeList = [];
+var plyCount = 1; //Počet hráčů
+var plyPlay = 1;  //Hrající hráč
+var pl1Strokes = 0;
+var pl2Strokes = 0;
+var pl3Strokes = 0;
+var pl4Strokes = 0;
 var end = false;
 var ball = null;
+var color = "white";
 var strokes = 0;
 var cx, cy;
 var currentLevel = 1;
 var winSound = new sound("content/sounds/winner.mp3");
 
-setInterval(think, 15);
+var mainLoop = setInterval(think, 15);
+setInterval(plNameUpdate, 500);
 loadLevel(level1);
+
+function plNameUpdate() {
+    document.getElementById("mg").innerHTML = "Minigolf - Player "+plyPlay;
+}
 
 function setBackground(borderColor, backgroundColor) { //Nastaví pozadí hracího pole
     canvas.style.border = "3px solid " + borderColor;
@@ -62,12 +72,43 @@ function canvas_arrow(context, fromx, fromy, tox, toy){
 function unloadLevel() {
     objects = [];
     ball = null;
-    strokeList.push(strokes);
-    document.getElementById("strokelist").innerHTML += "<li>Level "+currentLevel+": <b>"+strokes+"</b> strokes</li>";
-    strokes = 0;
-    currentLevel++;
+    if(plyPlay == 1) document.getElementById("strokelist").innerHTML += "<li>Level "+currentLevel+":</li>";
+    document.getElementById("strokelist").innerHTML += "Player <b>"+plyPlay+".</b> finished with <b>"+strokes+"</b> strokes<br>";
     plyCount = players();
+
+    switch(plyPlay) { //Změna barvy :)
+        case 1:
+            color = "yellow";
+            pl1Strokes += strokes;
+            break;
+        case 2:
+            color = "red";
+            pl2Strokes += strokes;
+            break;
+        case 3:
+            color = "blue";
+            pl3Strokes += strokes;
+            break;
+        case 4:
+            color = "blue";
+            pl4Strokes += strokes;
+            break;
+    }
+
+    strokes = 0;
+
+    if(plyPlay == plyCount) { //Všichni hráči již odehráli
+        plyPlay = 0;
+        currentLevel++;
+        color = "white";
+    }
+    
+    plyPlay++;
+
     switch(currentLevel){
+        case 1:
+            loadLevel(level1);
+            break;
         case 2: 
             loadLevel(level2);
             break;
@@ -84,16 +125,21 @@ function unloadLevel() {
             loadLevel(level6);
             break;
         default:
-            document.getElementById("win").innerHTML += "<b>End! Thanks for playing!</b>";
+            document.getElementById("win").innerHTML += "<b>End! Thanks for playing!</b><br>";
+            if(pl1Strokes != 0) document.getElementById("win").innerHTML += "Player 1 has <b>"+pl1Strokes+"</b> strokes.<br>";
+            if(pl2Strokes != 0) document.getElementById("win").innerHTML += "Player 2 has <b>"+pl2Strokes+"</b> strokes.<br>";
+            if(pl3Strokes != 0) document.getElementById("win").innerHTML += "Player 3 has <b>"+pl3Strokes+"</b> strokes.<br>";
+            if(pl4Strokes != 0) document.getElementById("win").innerHTML += "Player 3 has <b>"+pl4Strokes+"</b> strokes.<br>";
             setBackground("black", "white");
             winSound.play();
+            clearInterval(mainLoop);
             end = true;
             break;
     }
 }
 
 function artiWin() { //Funkce pro testování /artificial win/
-    currentLevel = "TEST";
+    currentLevel = 7;
     unloadLevel();
 }
 
@@ -122,7 +168,7 @@ function placeBall(ball) { //Nastaví souřadnice míče na kurzor
 
 function loadLevel(level) { //Načte do aktivních objektu, objekty levelu
     objects = level;
-    ball = new Golfball(cx,cy);
+    ball = new Golfball(cx,cy,color);
 }
 
 function paint() {
@@ -169,6 +215,7 @@ document.addEventListener("mousemove", function(evt) {
 }) 
 
 document.addEventListener("click", function(evt) {
+    if(end) return;
     if(ball.placed == false && objects[0].inStart()) {
         ball.placed = true;
     }

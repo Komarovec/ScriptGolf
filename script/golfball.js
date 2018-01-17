@@ -1,10 +1,10 @@
-function Golfball(x, y) {
+function Golfball(x, y, color) {
     this.x = x;
     this.y = y;
     this.placed = false;
     this.type = "ball";         // typ objektu
     this.radius = 10;
-    this.fillStyle = "white";      // barva výplně
+    this.fillStyle = color;      // barva výplně
     this.strokeStyle = "black";   // barva obrysu
     this.lineWidth = 5;
     this.lineDash = [];
