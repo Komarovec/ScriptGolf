@@ -1,32 +1,42 @@
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
-var objects = []; 
-//StartRect musí byt v poli levelu vždy PRVNÍ!
+
+/*-------------------LEVELY-------------------
+Pravidla vytváření:    
+    StartRect musí byt v poli levelu vždy PRVNÍ!
+    Pozice v poli ovlivňuje překrývání objektů! Čím víc vlevo tím víc vpředu.
+    Doporučené schéma: StartRect, Hole, Water/Sand, Walls.
+    Obdelníkové objekty 4 parametry (X, Y, Šířka, Výška) X max 800, Y max 600
+    Kruhové objekty 2 parametry (X, Y) --> poloměr nastaven "natvrdo" 
+*/
+
 var level1 = [new StartRect(50,50,150,100), new Water(400,400,400,200), new Wall(390,0,25,275), new Wall(390,325,25,275), new Hole(675,50)];
 var level2 = [new StartRect(50,450,150,100), new Wall(250,100,50,600), new Wall(500,0,50,500), new Hole(675,50)];
 var level3 = [new StartRect(50,50,100,100), new Wall(200,0,25,225), new Wall(0,200,150,25), new Wall(650,200,150,25), new Wall(575,0,25,225), new Water(350, 100,100,400), new Hole(750,50)];
 var level4 = [new StartRect(325,350,150,100), new Hole(400,250), new Wall(50, 285, 700, 25)];
 var level5 = [new StartRect(700,520,75,75), new Hole(50,50), new Sand(0,100,200,200), new Sand(600,300,200,200),new Wall(0,90,700,25), new Wall(100,490,700,25), new Wall(0,290,375,25), new Wall(425,290,375,25)];
 var level6 = [new StartRect(350,325,100,75), new Hole(50,50), new Sand(0,500,800,100), new Water(200,200,500,90), new Wall(25,290,700,25), new Wall(700,90,25,200)];
+
+var objects = []; //Aktuálně vykreslované objekty
 var plyCount = 1; //Počet hráčů
 var plyPlay = 1;  //Hrající hráč
-var pl1Strokes = 0;
+var pl1Strokes = 0; //Stroky různych hráčů
 var pl2Strokes = 0;
 var pl3Strokes = 0;
 var pl4Strokes = 0;
 var end = false;
 var ball = null;
 var color = "white";
-var strokes = 0;
-var cx, cy;
+var strokes = 0; //Aktualní počet stroku v JEDNOM levelu
+var cx, cy;  //Aktuální pozice kurzoru
 var currentLevel = 1;
 var winSound = new sound("content/sounds/winner.mp3");
 
-var mainLoop = setInterval(think, 15);
-setInterval(plNameUpdate, 500);
-loadLevel(level1);
+var mainLoop = setInterval(think, 15); //Nastavení hlavního opakování
+plNameUpdate();
+loadLevel(level1); //Načtení prvního levelu
 
-function plNameUpdate() {
+function plNameUpdate() { //Aktualizace nápisu hrače podle plyPlay
     document.getElementById("mg").innerHTML = "Minigolf - Player "+plyPlay;
 }
 
@@ -51,7 +61,7 @@ function sound(src) { //Objekt zvuk pro různé efekty
     }
 }
 
-function getMousePos(canvas, evt) {
+function getMousePos(canvas, evt) { //Nazev mluví za vše...
     var rect = canvas.getBoundingClientRect();
     return {
       x: evt.clientX - rect.left,
@@ -59,7 +69,7 @@ function getMousePos(canvas, evt) {
     };
 }
 
-function canvas_arrow(context, fromx, fromy, tox, toy){
+function canvas_arrow(context, fromx, fromy, tox, toy){ //Funkce pro vykreslení vektorové šipky
     var headlen = 10;
     var angle = Math.atan2(toy-fromy,tox-fromx);
     context.moveTo(fromx, fromy);
@@ -69,7 +79,7 @@ function canvas_arrow(context, fromx, fromy, tox, toy){
     context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
 }
 
-function unloadLevel() {
+function unloadLevel() { //Volána vždy po dokončení levelu --> Příprava na další level
     objects = [];
     ball = null;
     if(plyPlay == 1) document.getElementById("strokelist").innerHTML += "<li>Level "+currentLevel+":</li>";
@@ -90,7 +100,7 @@ function unloadLevel() {
             pl3Strokes += strokes;
             break;
         case 4:
-            color = "blue";
+            color = "pink";
             pl4Strokes += strokes;
             break;
     }
@@ -104,6 +114,7 @@ function unloadLevel() {
     }
     
     plyPlay++;
+    plNameUpdate();
 
     switch(currentLevel){
         case 1:
@@ -187,7 +198,7 @@ function paint() {
         obj.paint(ctx);
     });
 
-    if(objects[0].inStart() || ball.placed) //Vykresli míč pouzš pokud je ve startu nebo už byl položen.
+    if(objects[0].inStart() || ball.placed) //Vykresli míč pouze pokud je ve startu nebo už byl položen.
         ball.paint(ctx);
 
     if(ball.placed) {
@@ -209,7 +220,7 @@ function think() { //Zakladní opakovací funkce ..Moc nevyužita :)
     paint();
 }
 
-document.addEventListener("mousemove", function(evt) {
+document.addEventListener("mousemove", function(evt) { //Aktualizování pozice myši
     cx = getMousePos(canvas, evt).x;
     cy = getMousePos(canvas, evt).y;
 }) 

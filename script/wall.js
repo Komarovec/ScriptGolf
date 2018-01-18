@@ -7,10 +7,10 @@ function Wall(x, y, w, h) {
     this.fillStyle = "white";      // barva výplně
     this.hitboxSize = 25;  
   
-    this.collision = function(bx, by) {
+    this.collision = function(bx, by) { //Hitbox zdi + fyzika odrazu, pro každou stranu zvlášť
       if(!ball.placed) return;
       if((bx + ball.radius >= this.x && bx + ball.radius < this.x + this.hitboxSize) && (by >= this.y && by < this.y + this.height)) {
-        ball.xSpeed = -(ball.xSpeed);
+        ball.xSpeed = -(ball.xSpeed); //Původně zde bylo ještě odečtení o 5% rychlosti... závorky zůstaly...
         ball.x -= ball.radius/4;
         ball.ricochet.play();
       }
